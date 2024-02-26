@@ -1,0 +1,90 @@
+#V0-H3K4me3
+cat /public/home/xgong/HC/20210330/PET-AK-4_R1_paired.fq.gz  /public/home/xgong/HC/20210310/PET-AK-4-1_R1.fq.gz /public/home/xgong/HC/20220130/PET-AK-4-1_R1.fq.gz /public/home/xgong/HC/20210705/PET-AK-4-1_R1.fq.gz /public/home/yyliu/ChIA-PET/fq/V0-P4_R1_paired.fq.gz  >V0-H3K4me3_R1.fq.gz
+cat /public/home/xgong/HC/20210330/PET-AK-4_R2_paired.fq.gz  /public/home/xgong/HC/20210310/PET-AK-4-1_R2.fq.gz /public/home/xgong/HC/20220130/PET-AK-4-1_R2.fq.gz /public/home/xgong/HC/20210705/PET-AK-4-1_R2.fq.gz /public/home/yyliu/ChIA-PET/fq/V0-P4_R2_paired.fq.gz >V0-H3K4me3_R2.fq.gz
+module load Trimmomatic/0.32-Java-1.8.0_92
+java -jar $EBROOTTRIMMOMATIC/trimmomatic-0.32.jar PE -phred33 -threads 24 V0-H3K4me3_R1.fq.gz V0-H3K4me3_R2.fq.gz V0-H3K4me3_R1_paired.fq.gz V0-H3K4me3_R1_unpaired.fq.gz V0-H3K4me3_R2_paired.fq.gz V0-H3K4me3_R2_unpaired.fq.gz  ILLUMINACLIP:/public/home/chaohe/miniconda3/pkgs/trimmomatic-0.39-hdfd78af_2/share/trimmomatic-0.39-2/adapters/NexteraPE-PE.fa:2:30:10:8:TRUE LEADING:20 TRAILING:20 SLIDINGWINDOW:4:15  MINLEN:36
+cd /public/home/yyliu/ChIA-PET/ChIA-PET_Tool_V3
+module load BWA/0.7.17
+module load fastp/0.23.0
+i="V0-H3K4me3"
+bsub  -J "$i" -n 16 -o "$i".out -e "$i".err  -q high -R "rusage[mem=300GB]" "java -jar /public/home/yyliu/ChIA-PET/ChIA-PET_Tool_V3/ChIA-PET.jar \
+ --fastq1 /public/home/xgong/HC/mergefq/"$i"_R1_paired.fq.gz  --fastq2 /public/home/xgong/HC/mergefq/"$i"_R2_paired.fq.gz \
+--mode 1 --linker /public/home/chaohe/ChIA-PET/linker_info.txt \
+--start_step 6 \
+--MAPPING_CUTOFF 5 \
+--fastp /public/home/chaohe/miniconda3/envs/py36/bin/fastp \
+--hichip N \
+--GENOME_INDEX /public/home/chaohe/db/IWGSC_v1 \
+--GENOME_LENGTH 17E9 \
+--INPUT_ANCHOR_FILE /public/home/yyliu/ChIA-PET/ChIA-PET_Tool_V3/analysis/pet7/V0_V26N6_1.5kb_merged_submit_3kb_middleR7.bed \
+--CHROM_SIZE_INFO  /public/home/chaohe/ChIA-PET/ChIA-PET_Tool_V3-0/program/genome_table.txt \
+--CYTOBAND_DATA /public/home/chaohe/ChIA-PET/ChIA-PET_Tool_V3-0/program/wheat_cytoBandIdeo.txt \
+--SPECIES 3 \
+--prefix "$i"R3 \
+--thread 16"
+#V28N6-H3K4me3
+module load Trimmomatic/0.32-Java-1.8.0_92
+java -jar $EBROOTTRIMMOMATIC/trimmomatic-0.32.jar PE -phred33 -threads 20 V28-H3K4me3_R1.fq.gz V28-H3K4me3_R2.fq.gz V28-H3K4me3_R1_paired.fq.gz V28-H3K4me3_R1_unpaired.fq.gz V28-H3K4me3_R2_paired.fq.gz V28-H3K4me3_R2_unpaired.fq.gz  ILLUMINACLIP:/public/home/chaohe/miniconda3/pkgs/trimmomatic-0.39-hdfd78af_2/share/trimmomatic-0.39-2/adapters/NexteraPE-PE.fa:2:30:10:8:TRUE LEADING:20 TRAILING:20 SLIDINGWINDOW:4:15  MINLEN:36
+cd /public/home/yyliu/ChIA-PET/ChIA-PET_Tool_V3
+module load BWA/0.7.17
+module load fastp/0.23.0
+i="V28-H3K4me3"
+bsub  -J "$i" -n 16 -o "$i".out -e "$i".err -q high -R "rusage[mem=200GB]" "java -jar /public/home/yyliu/ChIA-PET/ChIA-PET_Tool_V3/ChIA-PET.jar \
+ --fastq1 /public/home/xgong/HC/mergefq/"$i"_R1_paired.fq.gz  --fastq2 /public/home/xgong/HC/mergefq/"$i"_R2_paired.fq.gz \
+--mode 1 --linker /public/home/chaohe/ChIA-PET/linker_info.txt \
+--start_step 1 \
+--MAPPING_CUTOFF 5 \
+--fastp /public/home/chaohe/miniconda3/envs/py36/bin/fastp \
+--hichip N \
+--GENOME_INDEX /public/home/chaohe/db/IWGSC_v1 \
+--GENOME_LENGTH 17E9 \
+--CHROM_SIZE_INFO  /public/home/chaohe/ChIA-PET/ChIA-PET_Tool_V3-0/program/genome_table.txt \
+--CYTOBAND_DATA /public/home/chaohe/ChIA-PET/ChIA-PET_Tool_V3-0/program/wheat_cytoBandIdeo.txt \
+--SPECIES 3 \
+--prefix "$i"R2 \
+--thread 16"
+
+########use anchor callPET
+sh V0-H3K4me3.sh
+sh V26N6-H3K4me3.sh
+
+####draw heatmap
+export PATH=$PATH:/public/home/chaohe/ChIA-PET2-master/bin
+module load HiCExplorer/3.5.1
+module load GCC/5.4.0-2.26
+cd /public/home/yyliu/ChIA-PET/ChIA-PET_Tool_V3/analysis/pet7
+for i in V0-H3K4me3 V28-H3K4me3
+do
+awk '{if ($1==$4) print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t.\t.\t.\t.\t"$7}' /public/home/yyliu/ChIA-PET/ChIA-PET_Tool_V3/"$i"/"$i".cluster.FDRfiltered.txt >"$i"_intra-interaction.bedpe
+awk '{if ($1!=$4) print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t.\t.\t.\t.\t"$7}' /public/home/yyliu/ChIA-PET/ChIA-PET_Tool_V3/"$i"/"$i".cluster.FDRfiltered.txt  >"$i"_inter-interaction.bedpe
+awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$5"\t"$6"\t.\t.\t.\t.\t"$7}' /public/home/yyliu/ChIA-PET/ChIA-PET_Tool_V3/"$i"/"$i".cluster.FDRfiltered.txt  >"$i".cluster.bedpe
+bedpe2Matrix --binsize 35000000 --chrsizes /public/home/chaohe/ChIA-PET/ChIA-PET_Tool_V3-0/program/genome_table.txt --ifile "$i".cluster.bedpe --oprefix "$i" --all --matrix-format complete --progress
+hicConvertFormat -m "$i".matrix -o "$i" --bedFileHicpro "$i"_abs.bed  --inputFormat hicpro --outputFormat h5
+hicPlotMatrix -m "$i".h5 -o "$i".35m.pdf \
+-t "$i" --log1p \
+--colorMap YlOrBr \
+--clearMaskedBins --chromosomeOrder 1A 1B 1D 2A 2B 2D 3A 3B 3D 4A 4B 4D 5A 5B 5D 6A 6B 6D 7A 7B 7D \
+--fontsize 6 \
+--vMax 1000 \
+--vMin 1
+hicPlotMatrix -m "$i".h5 -o "$i".35m.ABD.pdf \
+-t "$i" --log1p \
+--colorMap YlOrBr \
+--fontsize 6 \
+--clearMaskedBins --chromosomeOrder 1A 2A 3A 4A 5A 6A 7A 1B 2B 3B 4B 5B 6B 7B 1D 2D 3D 4D 5D 6D 7D \
+--vMax 1000 \
+--vMin 1
+#hicCorrectMatrix correct -m "$i".h5 --filterThreshold -1.5 5 -o "$i"_corrected.h5
+#hicSumMatrices -m "$i".h5 -o "$i"_Sum.h5
+#hicConvertFormat --matrices "$i"_Sum.h5  --inputFormat h5 -o "$i"_GInteration_example.35m --outputFormat ginteractions
+done
+
+###count pet interaction frequency
+for i in V0-H3K4me3 V28-H3K4me3
+do
+#hicConvertFormat -m "$i"_pet.matrix -o "$i" --bedFileHicpro "$i"_pet_abs.bed  --inputFormat hicpro --outputFormat h5
+hicSumMatrices -m "$i".h5 -o "$i"_Sum.h5
+hicConvertFormat --matrices "$i"_Sum.h5  --inputFormat h5 -o "$i"_GInteration_example --outputFormat ginteractions
+done
+
+
